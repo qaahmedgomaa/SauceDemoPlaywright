@@ -1,0 +1,69 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps ${{ matrix.browser }}
+    
+    - name: Run Playwright tests
+      run: npx playwright test --project=${{ matrix.browser }}
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: playwright-report-${{ matrix.browser }}
+        path: playwright-report/
+        retention-days: 30
+    
+    - name: Upload test screenshots
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: playwright-screenshots-${{ matrix.browser }}
+        path: screenshots/
+        retention-days: 30
+
+  report:
+    needs: test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download all test results
+      uses: actions/download-artifact@v3
+      with:
+        path: playwright-report
+    
+    - name: Publish Test Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30 
