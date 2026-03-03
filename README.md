@@ -1,4 +1,4 @@
-# Sauce Demo E-commerce Test Automation
+# Sauce Demo E-commerce Test Automation // trigger
 
 This project contains end-to-end test automation for the Sauce Demo e-commerce website using Playwright with JavaScript.
 
